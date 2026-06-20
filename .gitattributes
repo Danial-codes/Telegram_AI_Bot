@@ -1,0 +1,17 @@
+# Normalize line endings to LF and treat common binary formats as binary.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+
+# Force LF on shell scripts and config files even on Windows checkout.
+*.sh eol=lf
+*.yml eol=lf
+*.yaml eol=lf
+*.toml eol=lf
+*.cfg eol=lf
+Makefile eol=lf
