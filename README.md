@@ -62,13 +62,27 @@ Open Telegram, find your bot, press **Start**, and send any text message.
 All settings live in `.env`. Anything left unset falls back to the defaults
 documented in `.env.example`.
 
-| Variable               | Default          | Purpose                                          |
-| ---------------------- | ---------------- | ------------------------------------------------ |
-| `TELEGRAM_BOT_TOKEN`   | _required_       | Bot token from @BotFather                        |
-| `OPENAI_API_KEY`       | _required_       | OpenAI API key                                   |
-| `OPENAI_MODEL`         | `gpt-4o-mini`    | Any OpenAI chat model name                       |
-| `SYSTEM_PROMPT`        | helpful assistant | Sets the assistant's persona                   |
-| `MAX_HISTORY_MESSAGES` | `20`             | Past messages kept per user for chat memory      |
+| Variable                 | Default                | Purpose                                                       |
+| ------------------------ | ---------------------- | ------------------------------------------------------------- |
+| `TELEGRAM_BOT_TOKEN`     | _required_             | Bot token from @BotFather                                     |
+| `OPENAI_API_KEY`         | _required_             | OpenAI API key                                                |
+| `OPENAI_MODEL`           | `gpt-4o-mini`          | Any OpenAI chat model name                                    |
+| `OPENAI_BASE_URL`        | `https://api.openai.com/v1` | Base URL of an OpenAI-compatible endpoint (Azure, Together, Ollama, vLLM, …) |
+| `TELEGRAM_BASE_URL`      | `https://api.telegram.org`  | Telegram Bot API base URL (useful when self-hosting the Bot API server) |
+| `TELEGRAM_BASE_FILE_URL` | = `TELEGRAM_BASE_URL` | Override only the Telegram file-download endpoint             |
+| `SYSTEM_PROMPT`          | helpful assistant      | Sets the assistant's persona                                  |
+| `MAX_HISTORY_MESSAGES`   | `20`                   | Past messages kept per user for chat memory                   |
+
+### Pointing at alternative endpoints
+
+```ini
+# Local Ollama running on the same machine (llama3 model)
+OPENAI_BASE_URL=http://localhost:11434/v1
+OPENAI_MODEL=llama3
+
+# Self-hosted Telegram Bot API server (https://github.com/tdlib/telegram-bot-api)
+TELEGRAM_BASE_URL=http://localhost:8081
+```
 
 ## Notes
 
