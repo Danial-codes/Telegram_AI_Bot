@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Optional `OPENAI_BASE_URL` env var, so the bot can talk to any
+  OpenAI-compatible endpoint (Azure OpenAI, Together, Ollama, vLLM, …)
+  without code changes.
+- Optional `TELEGRAM_BASE_URL` and `TELEGRAM_BASE_FILE_URL` env vars for
+  pointing the bot at a self-hosted Telegram Bot API server.
+- Helpers `build_openai_client()` and `build_application()` exported from
+  `bot.py` so the configuration layer can be unit-tested.
+- Smoke tests for both helpers (`tests/test_helpers.py`).
+
 ## [0.1.0] — 2026-06-20
 
 ### Added

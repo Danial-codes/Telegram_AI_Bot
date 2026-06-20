@@ -15,7 +15,7 @@ from collections import defaultdict, deque
 
 from dotenv import load_dotenv
 from openai import OpenAI
-from telegram import Update
+from telegram import Bot, Update
 from telegram.constants import ChatAction, ParseMode
 from telegram.ext import (
     Application,
@@ -32,6 +32,10 @@ load_dotenv()
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+# Optional overrides for self-hosted / proxy endpoints. Leave empty for defaults.
+OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL") or None
+TELEGRAM_BASE_URL = os.getenv("TELEGRAM_BASE_URL") or None
+TELEGRAM_BASE_FILE_URL = os.getenv("TELEGRAM_BASE_FILE_URL") or None
 SYSTEM_PROMPT = os.getenv(
     "SYSTEM_PROMPT",
     "You are a helpful assistant. Be concise, friendly, and clear. "
@@ -58,7 +62,17 @@ logger = logging.getLogger(__name__)
 
 # ---- OpenAI client ---------------------------------------------------------
 
-openai_client = OpenAI(api_key=OPENAI_API_KEY)
+def build_openai_client(api_key: str, base_url: str | None) -> OpenAI:
+    """Construct an OpenAI client, forwarding a custom base URL when provided.
+
+    When ``base_url`` is ``None`` the SDK falls back to ``https://api.openai.com/v1``.
+    When set, it can point at any OpenAI-compatible endpoint (Azure OpenAI,
+    Together, Ollama, vLLM, etc.).
+    """
+    return OpenAI(api_key=api_key, base_url=base_url)
+
+
+openai_client = build_openai_client(OPENAI_API_KEY, OPENAI_BASE_URL)
 
 # Stores the rolling per-user chat history as a deque of {"role", "content"}.
 # Bounded by MAX_HISTORY_MESSAGES to keep token usage predictable.
@@ -197,9 +211,40 @@ async def run_in_thread(func, *args, **kwargs):
     return await loop.run_in_executor(None, lambda: func(*args, **kwargs))
 
 
+def build_application(
+    token: str,
+    base_url: str | None = None,
+    base_file_url: str | None = None,
+) -> Application:
+    """Construct a Telegram ``Application``.
+
+    When ``base_url`` or ``base_file_url`` is provided — e.g. when self-hosting
+    the Telegram Bot API server locally or pointing at a staging endpoint —
+    a ``Bot`` is built explicitly so the custom endpoint is honored.
+    Otherwise the default Telegram endpoint is used.
+    """
+    if base_url or base_file_url:
+        custom_bot = Bot(
+            token=token,
+            base_url=base_url,
+            base_file_url=base_file_url,
+        )
+        return Application.builder().bot(custom_bot).build()
+    return Application.builder().token(token).build()
+
+
 def main() -> None:
-    logger.info("Starting bot with model %s", OPENAI_MODEL)
-    application = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
+    logger.info(
+        "Starting bot with model %s (openai_base_url=%s, telegram_base_url=%s)",
+        OPENAI_MODEL,
+        OPENAI_BASE_URL or "(default)",
+        TELEGRAM_BASE_URL or "(default)",
+    )
+    application = build_application(
+        TELEGRAM_BOT_TOKEN,
+        base_url=TELEGRAM_BASE_URL,
+        base_file_url=TELEGRAM_BASE_FILE_URL,
+    )
 
     application.add_handler(CommandHandler("start", start_command))
     application.add_handler(CommandHandler("help", help_command))
