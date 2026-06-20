@@ -1,0 +1,27 @@
+[Unit]
+Description=Telegram AI bot (OpenAI-backed)
+Documentation=https://github.com/example/telegram-ai-bot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=telegram-bot
+Group=telegram-bot
+WorkingDirectory=/opt/telegram-ai-bot
+EnvironmentFile=/opt/telegram-ai-bot/.env
+# Force unbuffered stdout so bot INFO logs reach journalctl immediately
+# (Python block-buffers stdout whenever it isn't a TTY, which the journal is).
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/opt/telegram-ai-bot/.venv/bin/python /opt/telegram-ai-bot/bot.py
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=telegram-ai-bot
+
+# Cap memory so a runaway prompt chain can't exhaust the VPS.
+MemoryMax=512M
+
+[Install]
+WantedBy=multi-user.target
