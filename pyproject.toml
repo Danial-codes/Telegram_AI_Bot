@@ -1,0 +1,67 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "telegram-ai-bot"
+version = "0.1.0"
+description = "Telegram bot that forwards user messages to OpenAI and replies with the model's answer."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "Danial" }]
+keywords = ["telegram", "bot", "openai", "ai", "chatbot", "assistant"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Communications :: Chat",
+    "Intended Audience :: Developers",
+]
+dependencies = [
+    "python-telegram-bot>=20.7",
+    "openai>=1.30.0",
+    "python-dotenv>=1.0.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.4.0",
+]
+
+[project.urls]
+"Bug Tracker" = "https://github.com/example/telegram-ai-bot/issues"
+"Source" = "https://github.com/example/telegram-ai-bot"
+
+[project.scripts]
+telegram-ai-bot = "bot:main"
+
+[tool.setuptools]
+py-modules = ["bot"]
+
+# ---- Ruff (linter) --------------------------------------------------------
+
+[tool.ruff]
+target-version = "py39"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "N", "SIM"]
+ignore = ["E501"]  # line length is handled by the formatter / line-length setting
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["N"]  # tests are allowed to use unusual names
+
+# ---- Pytest ---------------------------------------------------------------
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+addopts = "-ra"
