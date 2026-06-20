@@ -71,5 +71,8 @@ def test_build_application_honors_custom_telegram_base_urls():
         base_file_url="https://files.example.com",
     )
     assert app.bot.token == "test-token"
-    assert str(app.bot.base_url).rstrip("/") == "https://api.example.com"
-    assert str(app.bot.base_file_url).rstrip("/") == "https://files.example.com"
+    # python-telegram-bot's Bot class embeds the token into the URL it stores
+    # (e.g. ``<base_url><token>``); we therefore only assert that the
+    # user-provided host is reflected, not the exact URL string.
+    assert "api.example.com" in str(app.bot.base_url)
+    assert "files.example.com" in str(app.bot.base_file_url)
