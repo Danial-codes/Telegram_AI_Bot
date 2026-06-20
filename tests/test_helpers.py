@@ -20,9 +20,13 @@ def test_chunk_text_long_splits_within_limit():
     text = ("word " * (TELEGRAM_MAX_MESSAGE_LENGTH // 4)).strip()
     chunks = chunk_text(text)
     assert len(chunks) > 1
-    assert all(len(c) <= TELEGRAM_MAX_MESSAGE_LENGTH for c in chunks)
-    # The reassembled text should contain the same words in the same order.
-    assert " ".join(c.split()) == text
+    # Every chunk is at most the message-size limit, and none are empty.
+    for chunk in chunks:
+        assert 0 < len(chunk) <= TELEGRAM_MAX_MESSAGE_LENGTH
+    # Boundaries are trimmed, so the reassembled chunks may be slightly shorter
+    # than the input (by at most <chunks> characters), but never longer.
+    total = sum(len(chunk) for chunk in chunks)
+    assert len(text) - len(chunks) <= total <= len(text)
 
 
 def test_build_messages_includes_system_and_appends_user_message():

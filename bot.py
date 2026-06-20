@@ -8,10 +8,10 @@ Run:
 
 from __future__ import annotations
 
+import contextlib
 import logging
 import os
 from collections import defaultdict, deque
-from typing import Deque, Dict, List
 
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -62,12 +62,12 @@ openai_client = OpenAI(api_key=OPENAI_API_KEY)
 
 # Stores the rolling per-user chat history as a deque of {"role", "content"}.
 # Bounded by MAX_HISTORY_MESSAGES to keep token usage predictable.
-chat_history: Dict[int, Deque[dict]] = defaultdict(
+chat_history: dict[int, deque[dict]] = defaultdict(
     lambda: deque(maxlen=MAX_HISTORY_MESSAGES)
 )
 
 
-def build_messages(user_id: int, user_text: str) -> List[dict]:
+def build_messages(user_id: int, user_text: str) -> list[dict]:
     """Return the OpenAI message list for a user, appending their latest message."""
     history = chat_history[user_id]
     history.append({"role": "user", "content": user_text})
@@ -90,7 +90,7 @@ def ask_openai(user_id: int, user_text: str) -> str:
 # ---- Helpers ---------------------------------------------------------------
 
 
-def chunk_text(text: str, limit: int = TELEGRAM_MAX_MESSAGE_LENGTH) -> List[str]:
+def chunk_text(text: str, limit: int = TELEGRAM_MAX_MESSAGE_LENGTH) -> list[str]:
     """Split a long string into chunks respecting Telegram's message size limit.
 
     Splits on paragraph / line boundaries when possible so the output reads cleanly.
@@ -98,7 +98,7 @@ def chunk_text(text: str, limit: int = TELEGRAM_MAX_MESSAGE_LENGTH) -> List[str]
     if len(text) <= limit:
         return [text]
 
-    chunks: List[str] = []
+    chunks: list[str] = []
     remaining = text
     while len(remaining) > limit:
         # Try to find a natural break point within the limit window.
@@ -164,10 +164,8 @@ async def handle_message(update: Update, _context: ContextTypes.DEFAULT_TYPE) ->
 
     logger.info("Message from %s (%s): %s", user.full_name, user.id, message.text)
 
-    try:
+    with contextlib.suppress(Exception):  # pragma: no cover - best-effort UI hint
         await message.chat_action(ChatAction.TYPING)
-    except Exception:  # pragma: no cover - best-effort UI hint
-        pass
 
     try:
         reply = await run_in_thread(ask_openai, user.id, message.text)
