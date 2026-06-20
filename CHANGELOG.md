@@ -16,6 +16,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Helpers `build_openai_client()` and `build_application()` exported from
   `bot.py` so the configuration layer can be unit-tested.
 - Smoke tests for both helpers (`tests/test_helpers.py`).
+- `deploy/setup-vps.sh` — idempotent script that creates a dedicated
+  `telegram-bot` system user, clones (or hard-resets) the repo on the VPS,
+  sets up a per-user venv, writes `.env` from GitHub Actions secrets, and
+  installs/starts the bot as a `systemd` service.
+- `deploy/telegram-ai-bot.service` — `systemd` unit template, run as
+  `telegram-bot` user with `EnvironmentFile=/opt/telegram-ai-bot/.env`,
+  `Restart=on-failure`, and a `MemoryMax=512M` cap.
+- README has a new **Deploy** section documenting the required GitHub
+  secrets/vars and an ops cheatsheet.
+
+### Changed
+- Replaced `.github/workflows/ci.yml` with `.github/workflows/deploy.yml`.
+  The new workflow runs `ruff` + `pytest` on a Python 3.10/3.11/3.12
+  matrix, then (only if tests pass) SSHes to a VPS whose address lives in
+  GitHub Secrets, copies the `deploy/` folder over, and runs
+  `setup-vps.sh` to install and start the bot as a `systemd` service.
+  Trigger: push to `master` only.
 
 ## [0.1.0] — 2026-06-20
 

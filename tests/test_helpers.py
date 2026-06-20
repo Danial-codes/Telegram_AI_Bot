@@ -45,7 +45,11 @@ def test_build_messages_includes_system_and_appends_user_message():
 # ---- OpenAI client --------------------------------------------------------
 
 
-def test_build_openai_client_uses_default_endpoint_when_no_base_url():
+def test_build_openai_client_uses_default_endpoint_when_no_base_url(monkeypatch):
+    # The OpenAI SDK falls back to the OPENAI_BASE_URL environment variable
+    # when ``base_url`` is ``None``. Clear it so this test is hermetic whether
+    # or not the developer has it exported in their shell.
+    monkeypatch.delenv("OPENAI_BASE_URL", raising=False)
     client = bot.build_openai_client(api_key="test-key", base_url=None)
     assert "api.openai.com" in str(client.base_url)
 
